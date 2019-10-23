@@ -8,6 +8,39 @@
 
 -------
 
+## Nacos plus 扩展功能
+### 配置中心安全认证
+Nacos client默认是支持安全控制的可以参考阿里云商业版配置中心ACM集成方式 https://github.com/alibaba/spring-cloud-alibaba/wiki/ACM 以及 spring cloud alibaba 配置项 https://github.com/alibaba/spring-cloud-alibaba/blob/master/spring-cloud-alibaba-examples/nacos-example/nacos-config-example/readme-zh.md
+但是开源的Nacos并不含有安全控制模块，在Nacos plus里我们新增了兼容默认Nacos client的安全控制功能。
+
+ACCESS_KEY和SECRET_KEY为nacos console的登录账号和加密后的密码。可以在users表中查得，密码产生方式可以参考com.alibaba.nacos.console.utils.PasswordEncoderUtil.main()代码
+```java
+System.out.println(new BCryptPasswordEncoder().encode("nacos"));
+```
+
+SDK调用示例
+```java
+Properties properties = new Properties();
+properties.put(PropertyKeyConst.SERVER_ADDR, "localhost:8848");
+properties.put(PropertyKeyConst.ACCESS_KEY, "nacos");
+properties.put(PropertyKeyConst.SECRET_KEY, "$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu");
+ConfigService configService = NacosFactory.createConfigService(properties);
+```
+
+spring-cloud-alibaba调用示例(配置文件或启动参数添加)
+```properties
+spring.cloud.nacos.config.accessKey=nacos
+spring.cloud.nacos.config.secretKey=$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu
+```
+
+Nacos plus服务器开启安全控制功能(修改nacos/conf/application.properties配置)
+```properties
+# 开启配置中心安全认证
+nacos.security.enableConfigSpasFilter=true
+# 删除 忽略安全urls /v1/cs/**
+nacos.security.ignore.urls=/,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.ico,/console-fe/public/**,/v1/auth/login,/v1/console/health/**,/v1/ns/**,/v1/cmdb/**,/actuator/**,/v1/console/server/**
+```
+
 ## What does it do
 
 Nacos (official site: [http://nacos.io](http://nacos.io)) is an easy-to-use platform designed for dynamic service discovery and configuration and service management. It helps you to build cloud native applications and microservices platform easily.

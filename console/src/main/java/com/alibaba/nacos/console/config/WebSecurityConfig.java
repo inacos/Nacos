@@ -15,6 +15,7 @@
  */
 package com.alibaba.nacos.console.config;
 
+import com.alibaba.nacos.console.filter.ConfigSpasAuthenticationFilter;
 import com.alibaba.nacos.console.filter.JwtAuthenticationTokenFilter;
 import com.alibaba.nacos.console.security.CustomUserDetailsServiceImpl;
 import com.alibaba.nacos.console.security.JwtAuthenticationEntryPoint;
@@ -49,6 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public static final String AUTHORIZATION_TOKEN = "access_token";
 
     public static final String SECURITY_IGNORE_URLS_SPILT_CHAR = ",";
+    public static final String ENABLE_CONFIG_SPAS_FILTER = "nacos.security.enableConfigSpasFilter";
 
     @Autowired
     private CustomUserDetailsServiceImpl userDetailsService;
@@ -94,6 +96,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             // since we use jwt, csrf is not necessary
             .csrf().disable();
         http.addFilterBefore(new JwtAuthenticationTokenFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
+
+        String enableSimpleSpasFilter = env.getProperty(ENABLE_CONFIG_SPAS_FILTER);
+        if (Boolean.TRUE.toString().equals(enableSimpleSpasFilter)) {
+            http.addFilterBefore(new ConfigSpasAuthenticationFilter(this.userDetailsService), JwtAuthenticationTokenFilter.class);
+
+        }
 
         // disable cache
         http.headers().cacheControl();

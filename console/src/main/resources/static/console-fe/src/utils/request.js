@@ -6,6 +6,11 @@ const API_GENERAL_ERROR_MESSAGE = 'Request error, please try again later!';
 
 const request = () => {
   const instance = axios.create();
+  // add Authorization for console interface
+  instance.interceptors.request.use(config => {
+    config.headers.Authorization = localStorage.getItem('token');
+    return config;
+  });
 
   instance.interceptors.response.use(
     response => {
